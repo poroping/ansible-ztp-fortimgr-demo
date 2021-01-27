@@ -1,0 +1,41 @@
+---
+
+- hosts: fortimanagers
+  connection: httpapi
+  gather_facts: no
+  vars:
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 443
+
+    customer:
+      adom_name: "FISH"
+      kt: 1122334455
+      name: "Fish ehf."
+      tech_contact:
+        email: "tech@fish.ehf"
+        phone: "6661234"
+
+    device:
+      name: "example01"
+      serial_number: "FGT51E3U17001742"
+      interfaces:
+        internet1:
+          gateway: "120.55.33.10"
+          ip:
+            - "120.55.33.9"
+            - "255.255.255.252"
+          vlanid: 666
+        lan:
+          ip:
+            - "192.168.73.1"
+            - "255.255.255.0"
+          dhcp_range:
+            - "192.168.73.10"
+            - "192.168.73.250"
+
+  tasks:
+    - include_role:
+        name: add-model-device
+    - include_role:
+        name: config-model-device

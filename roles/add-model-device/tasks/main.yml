@@ -1,0 +1,31 @@
+---
+
+- name: Add model device by serial number.
+  fmgr_dvm_cmd_add_device:
+    dvm_cmd_add_device:
+      adom: "{{ customer.adom_name }}"
+      device:
+        adm_usr: "admin"
+        adm_pass: ""
+        desc: "Added by ansible"
+        device action: "add_model"
+        meta fields:
+          Billing Code: "{{ device.billing_code | default(omit)}}"
+          Company/Organization: "{{ customer.name }}"
+          Contact Email: "{{ customer.tech_contact.email | default(omit)}}"
+          Contact Phone Number: "{{ customer.tech_contact.phone | default(omit)}}"
+        mgmt_mode: "fmg"
+        mr: 2
+        name: "{{ device.name }}"
+        os_type: "fos"
+        os_ver: "6.0"
+        sn: "{{ device.serial_number }}"
+
+- name: Set device flags for ZTP.
+  fmgr_dvmdb_device:
+    adom: "{{ customer.adom_name }}"
+    device: "{{ device.name }}"
+    dvmdb_device:
+      flags:
+        - "linked_to_model"
+        - "is_model"

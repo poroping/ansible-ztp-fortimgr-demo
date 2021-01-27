@@ -1,0 +1,61 @@
+---
+
+- name: Configure trusted dynamic interfaces.
+  fmgr_dynamic_interface:
+    adom: "{{ customer.adom_name }}"
+    state: present
+    dynamic_interface:
+      color: 3
+      defmap-intrazone-deny: "disable"
+      name: "trusted"
+      single-intf: "enable"
+
+- name: Configure internet dynamic interfaces.
+  fmgr_dynamic_interface:
+    adom: "{{ customer.adom_name }}"
+    state: present
+    dynamic_interface:
+      color: 6
+      defmap-intrazone-deny: "enable"
+      name: "internet"
+      single-intf: "enable"
+
+- name: Configure default policy package.
+  fmgr_pkg_firewall_policy:
+    adom: "{{ customer.adom_name }}"
+    pkg: "default"
+    state: present
+    pkg_firewall_policy:
+      action: "accept"
+      dstaddr: "all"
+      dstintf: "internet"
+      logtraffic: "disable"
+      name: "internet access"
+      nat: "enable"
+      policyid: 1
+      schedule: "always"
+      service: "ALL"
+      srcaddr: "all"
+      srcintf: "trusted"
+      status: "enable"
+      utm-status: "disable"
+
+- name: Configure admin password change scripts.
+  fmgr_dvmdb_script:
+    adom: "{{ customer.adom_name }}"
+    state: present
+    dvmdb_script:
+      content: |
+        config system admin
+        edit admin
+        set password changeme
+        set trusthost1 194.105.254.0/24
+        set trusthost2 10.0.0.0/8
+        set trusthost3 192.168.0.0/16
+        set trusthost4 172.16.0.0/12
+        next
+        end
+      desc: "Script called by Ansible to set backup admin password."
+      name: "Set-Admin-Password"
+      target: "device_database"
+      type: "cli"

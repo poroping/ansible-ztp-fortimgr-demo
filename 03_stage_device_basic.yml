@@ -1,0 +1,41 @@
+---
+
+- hosts: fortimanagers
+  connection: httpapi
+  collections:
+  - fortinet.fortimanager
+  gather_facts: no
+  vars:
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 443
+    device:
+      name: "example01"
+      serial_number: "FGT51E3U17001742"
+
+  tasks:
+    - name: Add model device by serial number.
+      fmgr_dvm_cmd_add_device:
+        dvm_cmd_add_device:
+          adom: "FISH"
+          device:
+            adm_pass: ""
+            adm_usr: "admin"
+            desc: "Added by ansible"
+            device action: "add_model"
+            mgmt_mode: "fmg"
+            mr: 2
+            name: "{{ device.name }}"
+            os_type: "fos"
+            os_ver: "6.0"
+            sn: "{{ device.serial_number }}"
+
+    - name: Set device flags for ZTP.
+      fmgr_dvmdb_device:
+        adom: "FISH"
+        device: "{{ device.name }}"
+        dvmdb_device:
+          flags:
+            - "linked_to_model"
+            - "is_model"
+

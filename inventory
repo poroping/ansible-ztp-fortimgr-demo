@@ -1,0 +1,5 @@
+[fortimanagers]
+demo ansible_host=f.sensa.is ansible_user="demo" ansible_password="Z7PD3m0!!!"
+
+[fortimanagers:vars]
+ansible_network_os=fortinet.fortimanager.fortimanager

@@ -1,0 +1,125 @@
+---
+
+- name: Setup internet1.
+  fmgr_generic:
+    method: "set"
+    params:
+      - url: "/pm/config/device/{{ device.name }}/global/system/interface"
+        data:
+          - name: "internet1"
+            vdom:
+            - "root"
+            mode: "static"
+            ip:
+            - "{{ device.interfaces.internet1.ip[0] }}"
+            - "{{ device.interfaces.internet1.ip[1] }}"
+            allowaccess:
+            - "ping"
+            - "fgfm"
+            - "https"
+            - "ssh"
+            type: "vlan"
+            vlanid: "{{ device.interfaces.internet1.vlanid }}"
+            role: "wan"
+            interface: "wan1"
+
+- name: Setup default route.
+  fmgr_generic:
+    method: "set"
+    params:
+      - url: "/pm/config/device/{{ device.name }}/vdom/root/router/static"
+        data:
+          - seq-num: "1"
+            dst:
+            - "0.0.0.0"
+            - "0.0.0.0"
+            gateway: "{{ device.interfaces.internet1.gateway }}"
+            device: "internet1"
+
+- name: Setup lan.
+  fmgr_generic:
+    method: "set"
+    params:
+      - url: "/pm/config/device/{{ device.name }}/global/system/interface"
+        data:
+          - name: "lan"
+            vdom:
+            - root
+            mode: static
+            ip:
+            - "{{ device.interfaces.lan.ip[0] }}"
+            - "{{ device.interfaces.lan.ip[1] }}"
+            allowaccess:
+            - ping
+            - https
+            - ssh
+            - capwap
+            auto-auth-extension-device: enable
+            role: lan
+            device-identification: enable
+            device-user-identification: enable
+      - url: "/pm/config/device/{{ device.name }}/vdom/root/system/dhcp/server"
+        data:
+          - ip-range:
+            - end-ip: "{{ device.interfaces.lan.dhcp_range[1] }}"
+              id: 1
+              start-ip: "{{ device.interfaces.lan.dhcp_range[0] }}"
+            id: 1
+            lease-time: 8640
+            dns-service: default
+            default-gateway: "{{ device.interfaces.lan.ip[0] }}"
+            netmask: "{{ device.interfaces.lan.ip[1] }}"
+            interface:
+            - "lan"
+
+- name: Map internet interfaces.
+  fmgr_dynamic_interface_dynamicmapping:
+    adom: "{{ customer.adom_name }}"
+    interface: "internet"
+    state: present
+    dynamic_interface_dynamicmapping:
+      _scope:
+        - name: "{{ device.name }}"
+          vdom: "root"
+      local-intf: "internet1"
+
+- name: Map internal interfaces.
+  fmgr_dynamic_interface_dynamicmapping:
+    adom: "{{ customer.adom_name }}"
+    interface: "trusted"
+    state: present
+    dynamic_interface_dynamicmapping:
+      _scope:
+        - name: "{{ device.name }}"
+          vdom: "root"
+      local-intf: "lan"
+
+- name: Run script.
+  fmgr_dvmdb_script_execute:
+    adom: "{{ customer.adom_name }}"
+    dvmdb_script_execute:
+      adom: "{{ customer.adom_name }}"
+      scope:
+        - name: "{{ device.name }}"
+          vdom: "root"
+      script: "Set-Admin-Password"
+
+- name: Assign policy package.
+  fmgr_pm_pkg_adom:
+    adom: "{{ customer.adom_name }}"
+    pm_pkg_adom:
+      name: "default"
+      scope member:
+        - name: "{{ device.name }}"
+          vdom: "root"
+
+- name: Install policy package.
+  fmgr_securityconsole_install_package:
+    securityconsole_install_package:
+      adom: "{{ customer.adom_name }}"
+      flags:
+        - "none"
+      pkg: "default"
+      scope:
+        - name: "{{ device.name }}"
+          vdom: "root"

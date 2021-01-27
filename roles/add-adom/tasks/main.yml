@@ -1,0 +1,14 @@
+---
+
+- name: Add ADOM by customer code.
+  fmgr_dvmdb_adom:
+    dvmdb_adom:
+      desc: "Added by ansible"
+      flags:
+        - "central_sdwan"
+      meta fields:
+        Kennitala: "{{ customer.kt }}"
+      mr: 2
+      name: "{{ customer.adom_name }}"
+      os_ver: "6.0"
+    state: present

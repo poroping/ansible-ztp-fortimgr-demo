@@ -1,0 +1,22 @@
+---
+
+- hosts: fortimanagers
+  connection: httpapi
+  gather_facts: no
+  vars:
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 443
+    customer:
+      adom_name: "FISH"
+      kt: 1122334455
+      name: "Fish ehf."
+      tech_contact:
+        email: "tech@fish.ehf"
+        phone: "6661234"
+
+  tasks:
+    - include_role:
+        name: add-adom
+    - include_role:
+        name: config-adom

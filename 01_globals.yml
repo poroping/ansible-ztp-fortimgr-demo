@@ -1,0 +1,29 @@
+---
+
+- hosts: fortimanagers
+  connection: httpapi
+  collections:
+  - fortinet.fortimanager
+  gather_facts: no
+  vars:
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 443
+
+  tasks:
+    - name: Setup custom ADOM meta fields.
+      fmgr_dvmdb_metafields_adom:
+        dvmdb_metafields_adom:
+          importance: "required"
+          length: 10
+          name: "Kennitala"
+          status: "enable"
+
+    - name: Setup custom device meta fields.
+      fmgr_dvmdb_metafields_device:
+        dvmdb_metafields_device:
+          importance: "optional"
+          length: 6
+          name: "Billing Code"
+          status: "enable"
+          
