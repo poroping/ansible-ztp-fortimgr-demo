@@ -120,8 +120,29 @@ At this point we are ready to ZTP. Again, factory reset and plug into the stagin
 
 ```05_true_zero_touch.yml```
 
-**WIP**
+This play is a basic example of how this could be implemented with a frontend and dynamically retrieve information at the time of provisioning. The idea here being that a technician can unbox a device, enter basic information into a provisioning portal, plug it into the provisioning network, get a coffee and come back to a full configured and ready to deploy firewall. No interaction with a Network Engineer required.
+
+Enter the frontend dir, install the required python modules and launch our super basic flask app.
+
+```
+cd ./frontend/
+pip3 install -r requirements.txt
+python3 app.py
+```
+
+Navigate to http://localhost:5000/ and check the sweet formatting.
+
+If you're playing along at home, delete your test device from the FortiManager and enter your device ```serial number``` in the Serial field, line number for this example is ```ns-1234``` and select ```FISH``` as your customer.
+
+On form submission the device will be provisioned on FortiManager and the physical device can be (factory reset) and connected to the staging network. ZTP will trigger and the device will pull it's full configuration from the FortiManager.
+
+We achieve this dynamically by having the play retrieve the required device variables from our "database" (http://localhost:5000/json).
+
+Hope this demo helps anyone interested in implementing FortiZTP deployments.
+
+**FIN**
 
 ---
+---
 
-I have an old working POC for a full setup with validation and logic and including staging FortiSwitch and FortiAPs but need to dust it off and get it working again.
+I have an old working POC for a full setup with validation and logic and including staging FortiSwitch and FortiAPs but need to dust it off and get it working again. If anyone is interested HMU.
