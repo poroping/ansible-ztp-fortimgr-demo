@@ -1,0 +1,40 @@
+---
+
+- hosts: fortimanagers
+  connection: httpapi
+  gather_facts: no
+  vars:
+    ansible_httpapi_use_ssl: yes
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 443
+    device:
+      interfaces:
+        lan:
+          ip:
+            - "192.168.73.1"
+            - "255.255.255.0"
+          dhcp_range:
+            - "192.168.73.10"
+            - "192.168.73.250"
+    ### ^^ these could be auto generated, just couldn't be bothered for this demo
+
+  pre_tasks:
+    - name: API call to gather info from 'database'
+      ansible.builtin.uri:
+        url: "http://localhost:5000/json"
+        return_content: yes
+      register: response
+
+    - name: Set customer facts
+      set_fact:
+        customer_facts: "{{ response.json.customers[customerid] }}"
+
+    - name: Set line facts
+      set_fact:
+        line_facts: "{{ response.json.lines[line] }}"
+
+  tasks:
+    - include_role:
+        name: add-model-device-auto
+    - include_role:
+        name: config-model-device-auto
